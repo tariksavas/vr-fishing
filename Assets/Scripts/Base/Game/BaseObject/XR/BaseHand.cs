@@ -1,17 +1,52 @@
 namespace Base.Game.BaseObject.XR
 {
+    using Base.Utility;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.XR;
 
-    [RequireComponent(typeof(Collider))]
     public class BaseHand : BaseObject
     {
         [SerializeField] private InputDeviceCharacteristics handType = InputDeviceCharacteristics.Right;
+        [SerializeField] private Transform rayTransform = null;
 
         private InputDevice _device;
         private static List<BaseHand> Hands { get; set; } = new List<BaseHand>();
+
+
+        private PortableObject _handledObject;
+        public PortableObject HandledObject
+        {
+            get => _handledObject;
+            set
+            {
+                _handledObject = value;
+
+                if (_handledObject)
+                {
+                    _device.SendHapticImpulse(0u, Constant.HAPTICAMPLITUDE, Constant.HAPTICDURATION);
+                    ObjectHandled?.Invoke();
+                }
+            }
+        }
+
+        private IInteractable _triggeredObject;
+        private IInteractable TriggeredObject
+        {
+            get => _triggeredObject;
+            set
+            {
+                if (_triggeredObject != null && _triggeredObject != value)
+                    _triggeredObject.OnTriggerExitHand(this);
+
+                if (value != null && _triggeredObject != value)
+                    value.OnTriggerEnterHand(this);
+
+                _triggeredObject = value;
+            }
+        }
 
         private bool _pressedTriggerButton = false;
         public bool PressedTriggerButton
@@ -28,7 +63,7 @@ namespace Base.Game.BaseObject.XR
                 TriggerButtonPressing?.Invoke(this, value);
             }
         }
-        
+
         private bool _pressedGripButton = false;
         public bool PressedGripButton
         {
@@ -84,13 +119,13 @@ namespace Base.Game.BaseObject.XR
         public event Action<BaseHand> PrimaryAxisUp;
         public event Action<BaseHand, Vector2> AxisChanged;
         public event Action MenuButtonDown;
+        public event Action ObjectHandled;
 
         protected override void Initialize()
         {
             base.Initialize();
 
             Hands.Add(this);
-            AssaignHand();
         }
 
         protected override void OnDestroy()
@@ -103,46 +138,72 @@ namespace Base.Game.BaseObject.XR
         private void Update()
         {
             InputDetection();
+            ObjectDetection();
         }
 
-        private void AssaignHand()
+        private void AssaignHand(Action<InputDevice> device)
         {
             var inputDevices = new List<InputDevice>();
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, inputDevices);
-            _device = inputDevices.Find(x => x.characteristics.HasFlag(handType));
+            device?.Invoke(inputDevices.Find(x => x.characteristics.HasFlag(handType)));
         }
 
         private void InputDetection()
         {
-            if (_device != null && _device.isValid)
+            AssaignHand(device => 
             {
-                if (_device.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed))
-                    PressedTriggerButton = pressed;
+                _device = device;
+
+                if (_device != null && _device.isValid)
+                {
+                    if (_device.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed))
+                        PressedTriggerButton = pressed;
+                    else
+                        PressedTriggerButton = false;
+
+                    if (_device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
+                        AxisValue = axisValue;
+                    else
+                        AxisValue = Vector2.zero;
+
+                    if (_device.TryGetFeatureValue(CommonUsages.gripButton, out bool gripPressed))
+                        PressedGripButton = gripPressed;
+                    else
+                        PressedGripButton = false;
+
+                    if (_device.TryGetFeatureValue(CommonUsages.menuButton, out bool menuButtonPressing))
+                        MenuButtonPressed = menuButtonPressing;
+                    else
+                        MenuButtonPressed = false;
+                }
                 else
+                {
                     PressedTriggerButton = false;
-
-                if (_device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
-                    AxisValue = axisValue;
-                else
                     AxisValue = Vector2.zero;
-
-                if (_device.TryGetFeatureValue(CommonUsages.gripButton, out bool gripPressed))
-                    PressedGripButton = gripPressed;
-                else
                     PressedGripButton = false;
-
-                if (_device.TryGetFeatureValue(CommonUsages.menuButton, out bool menuButtonPressing))
-                    MenuButtonPressed = menuButtonPressing;
-                else
                     MenuButtonPressed = false;
+                }
+            });
+        }
+
+        private void ObjectDetection()
+        {
+            if (HandledObject)
+                return;
+
+            RaycastHit hit;
+            Ray ray = new Ray(rayTransform.position, rayTransform.forward);
+
+            if (Physics.Raycast(ray, out hit, Constant.DISTANCEOFOBJECTDETECTIONRAY, Constant.LAYEROFBASEOBJECT))
+            {
+                if (hit.collider.GetComponent<IInteractable>() is IInteractable interactableObject)
+                    TriggeredObject = interactableObject;
+
+                else if (hit.collider.GetComponentInParent<IInteractable>() is IInteractable interactableObject2)
+                    TriggeredObject = interactableObject2;
             }
             else
-            {
-                PressedTriggerButton = false;
-                AxisValue = Vector2.zero;
-                PressedGripButton = false;
-                MenuButtonPressed = false;
-            }
+                TriggeredObject = null;
         }
     }
 }
