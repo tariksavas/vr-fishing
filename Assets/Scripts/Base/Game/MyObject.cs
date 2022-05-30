@@ -1,6 +1,5 @@
 namespace Base.Game
 {
-    using System;
     using UnityEngine;
 
     public class MyObject : MonoBehaviour

@@ -2,7 +2,6 @@ namespace Base.Game.BaseObject.XR
 {
     using Base.Utility;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.XR;
@@ -10,7 +9,6 @@ namespace Base.Game.BaseObject.XR
     public class BaseHand : BaseObject
     {
         [SerializeField] private InputDeviceCharacteristics handType = InputDeviceCharacteristics.Right;
-        [SerializeField] private Transform rayTransform = null;
 
         private InputDevice _device;
         private static List<BaseHand> Hands { get; set; } = new List<BaseHand>();
@@ -138,7 +136,6 @@ namespace Base.Game.BaseObject.XR
         private void Update()
         {
             InputDetection();
-            ObjectDetection();
         }
 
         private void AssaignHand(Action<InputDevice> device)
@@ -150,7 +147,7 @@ namespace Base.Game.BaseObject.XR
 
         private void InputDetection()
         {
-            AssaignHand(device => 
+            AssaignHand(device =>
             {
                 _device = device;
 
@@ -186,23 +183,26 @@ namespace Base.Game.BaseObject.XR
             });
         }
 
-        private void ObjectDetection()
+        private void OnTriggerStay(Collider other)
         {
             if (HandledObject)
                 return;
 
-            RaycastHit hit;
-            Ray ray = new Ray(rayTransform.position, rayTransform.forward);
-
-            if (Physics.Raycast(ray, out hit, Constant.DISTANCEOFOBJECTDETECTIONRAY, Constant.LAYEROFBASEOBJECT))
+            if (other.gameObject.layer == Constant.LAYEROFBASEOBJECT)
             {
-                if (hit.collider.GetComponent<IInteractable>() is IInteractable interactableObject)
+                if (other.GetComponent<IInteractable>() is IInteractable interactableObject)
                     TriggeredObject = interactableObject;
 
-                else if (hit.collider.GetComponentInParent<IInteractable>() is IInteractable interactableObject2)
+                else if (other.GetComponentInParent<IInteractable>() is IInteractable interactableObject2)
                     TriggeredObject = interactableObject2;
             }
             else
+                TriggeredObject = null;
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (TriggeredObject == other.gameObject.GetComponent<IInteractable>() || TriggeredObject == other.GetComponentInParent<IInteractable>())
                 TriggeredObject = null;
         }
     }
