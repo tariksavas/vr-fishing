@@ -3,6 +3,7 @@ namespace Base.Game.BaseObject.InteractableObject
     using Base.Game.BaseObject.NonInteractableObject;
     using Base.Game.BaseObject.XR;
     using Base.Utility;
+    using Obi;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Base.Game.BaseObject.InteractableObject
     {
         [Header("Objective")]
         [SerializeField] private GameObject objectivePopup = null;
-        
+
         [Header("Fishing"), Space]
         [SerializeField] private string catchAnimName = "Catch";
         [SerializeField] private string releaseAnimName = "Release";
@@ -25,6 +26,8 @@ namespace Base.Game.BaseObject.InteractableObject
         private PortableObject ownPortableObject;
         private Coroutine fishingCoroutine;
         private Animator ownAnimator;
+        private ObiRopeCursor cursor;
+        private ObiRope rope;
 
         public static event Action catchFish;
 
@@ -34,6 +37,8 @@ namespace Base.Game.BaseObject.InteractableObject
 
             ownPortableObject = GetComponent<PortableObject>();
             ownAnimator = GetComponent<Animator>();
+            cursor = GetComponentInChildren<ObiRopeCursor>();
+            rope = cursor.GetComponent<ObiRope>();
         }
 
         protected override void Registration()
@@ -91,6 +96,16 @@ namespace Base.Game.BaseObject.InteractableObject
         {
             ownAnimator.SetTrigger(releaseAnimName);
             caughtFish.handled -= OnHandled;
+        }
+
+        private void Update()
+        {
+            //TODO: will be add pulley integration
+            if (Input.GetKey(KeyCode.W))
+                cursor.ChangeLength(rope.restLength - 1f * Time.deltaTime);
+
+            if (Input.GetKey(KeyCode.S))
+                cursor.ChangeLength(rope.restLength + 1f * Time.deltaTime);
         }
     }
 }
