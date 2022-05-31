@@ -1,10 +1,13 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class Extention
+namespace Base.Utility
 {
-    public static GameObject Random(this List<GameObject> list)
+    using System.Collections.Generic;
+    using UnityEngine;
+
+    public static class Extention
     {
-        return list[UnityEngine.Random.Range(0, list.Count - 1)];
+        public static GameObject Random(this List<GameObject> list)
+        {
+            return list[UnityEngine.Random.Range(0, list.Count - 1)];
+        }
     }
 }

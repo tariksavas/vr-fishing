@@ -1,9 +1,9 @@
-﻿using Base.Game.BaseObject.InteractableObject;
-using System;
-using UnityEngine;
-
-namespace Base.Game.BaseObject.NonInteractableObject
+﻿namespace Base.Game.BaseObject.NonInteractableObject
 {
+    using Base.Game.BaseObject.InteractableObject;
+    using System;
+    using UnityEngine;
+
     public class RopeEnd : BaseObject
     {
         [SerializeField] private float waterLevel = 1;

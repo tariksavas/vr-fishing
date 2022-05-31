@@ -2,6 +2,7 @@ namespace Base.Game.BaseObject.InteractableObject
 {
     using Base.Game.BaseObject.NonInteractableObject;
     using Base.Game.BaseObject.XR;
+    using Base.Utility;
     using System;
     using System.Collections;
     using System.Collections.Generic;
