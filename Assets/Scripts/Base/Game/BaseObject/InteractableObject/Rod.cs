@@ -47,6 +47,7 @@ namespace Base.Game.BaseObject.InteractableObject
 
             ownPortableObject.Receipt += OnReceipt;
             ownPortableObject.Left += OnLeft;
+            PulleyRotator.turning += OnTurning;
         }
 
         protected override void UnRegistration()
@@ -55,17 +56,20 @@ namespace Base.Game.BaseObject.InteractableObject
 
             ownPortableObject.Receipt -= OnReceipt;
             ownPortableObject.Left -= OnLeft;
+            PulleyRotator.turning -= OnTurning;
         }
 
         private void OnReceipt(BaseHand obj)
         {
-            objectivePopup?.SetActive(false);
+            if (objectivePopup)
+                objectivePopup?.SetActive(false);
 
             robeEnd.underWater += OnUnderWater;
         }
         private void OnLeft()
         {
             robeEnd.underWater -= OnUnderWater;
+
             OnUnderWater(false);
         }
 
@@ -98,14 +102,12 @@ namespace Base.Game.BaseObject.InteractableObject
             caughtFish.handled -= OnHandled;
         }
 
-        private void Update()
+        private void OnTurning(float difference)
         {
-            //TODO: will be add pulley integration
-            if (Input.GetKey(KeyCode.W))
-                cursor.ChangeLength(rope.restLength - 1f * Time.deltaTime);
+            if ((difference < 0 && rope.restLength <= 1.8f) || (difference > 0 && rope.restLength >= 6))
+                return;
 
-            if (Input.GetKey(KeyCode.S))
-                cursor.ChangeLength(rope.restLength + 1f * Time.deltaTime);
+            cursor.ChangeLength(rope.restLength + difference * Time.deltaTime * 0.02f);
         }
     }
 }

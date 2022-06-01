@@ -2,11 +2,20 @@
 {
     using Base.Game.BaseObject.XR;
     using System;
+    using UnityEngine;
 
     public class PortableObject : BaseObject, IInteractable
     {
         public event Action<BaseHand> Receipt;
         public event Action Left;
+
+        private Transform parent;
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            parent = transform.parent;
+        }
 
         public void OnTriggerEnterHand(BaseHand hand)
         {
@@ -41,7 +50,7 @@
 
         protected virtual void Leave(BaseHand hand)
         {
-            transform.SetParent(null);
+            transform.SetParent(parent);
             Left?.Invoke();
 
             hand.GripButtonDown -= OnGripButtonDown;
