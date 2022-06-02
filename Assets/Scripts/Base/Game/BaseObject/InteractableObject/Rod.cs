@@ -14,12 +14,13 @@ namespace Base.Game.BaseObject.InteractableObject
     {
         [Header("Objective")]
         [SerializeField] private GameObject objectivePopup = null;
+        [SerializeField] private AudioSource sealSource = null;
 
         [Header("Fishing"), Space]
         [SerializeField] private string catchAnimName = "Catch";
         [SerializeField] private string releaseAnimName = "Release";
-        [SerializeField] private float minFishingTime = 10;
-        [SerializeField] private float maxFishingTime = 20;
+        [SerializeField] private float minFishingTime = 5;
+        [SerializeField] private float maxFishingTime = 10;
         [SerializeField] private RopeEnd robeEnd = null;
         [SerializeField] private List<GameObject> fishs = new List<GameObject>();
 
@@ -28,6 +29,7 @@ namespace Base.Game.BaseObject.InteractableObject
         private Animator ownAnimator;
         private ObiRopeCursor cursor;
         private ObiRope rope;
+        private bool firstTime = true;
 
         public static event Action catchFish;
 
@@ -64,6 +66,12 @@ namespace Base.Game.BaseObject.InteractableObject
             if (objectivePopup)
                 objectivePopup?.SetActive(false);
 
+            if (firstTime)
+            {
+                sealSource.Play();
+                firstTime = false;
+            }
+
             robeEnd.underWater += OnUnderWater;
         }
         private void OnLeft()
@@ -76,9 +84,12 @@ namespace Base.Game.BaseObject.InteractableObject
         private void OnUnderWater(bool underWater)
         {
             if (!underWater && fishingCoroutine != null)
+            {
                 StopCoroutine(fishingCoroutine);
+                fishingCoroutine = null;
+            }
 
-            else if (fishingCoroutine == null)
+            else if (underWater && fishingCoroutine == null)
                 fishingCoroutine = StartCoroutine(Fishing());
         }
 
@@ -94,6 +105,7 @@ namespace Base.Game.BaseObject.InteractableObject
                     caughtFish.handled += OnHandled;
                 }
             });
+            fishingCoroutine = null;
         }
 
         private void OnHandled(Fish caughtFish)
@@ -104,10 +116,10 @@ namespace Base.Game.BaseObject.InteractableObject
 
         private void OnTurning(float difference)
         {
-            if ((difference < 0 && rope.restLength <= 1.8f) || (difference > 0 && rope.restLength >= 6))
+            if ((difference < 0 && rope.restLength <= 1.8f) || (difference > 0 && rope.restLength >= 7))
                 return;
 
-            cursor.ChangeLength(rope.restLength + difference * Time.deltaTime * 0.02f);
+            cursor.ChangeLength(rope.restLength + difference * Time.deltaTime * 0.05f);
         }
     }
 }

@@ -2,17 +2,21 @@
 {
     using Base.Game.BaseObject.XR;
     using System;
+    using UnityEngine;
 
     public class Fish : BaseObject
     {
         private PortableObject ownPortableObject;
+        private Rigidbody ownRigidbody;
 
         public event Action<Fish> handled;
+
         protected override void Initialize()
         {
             base.Initialize();
 
             ownPortableObject = GetComponent<PortableObject>();
+            ownRigidbody = GetComponent<Rigidbody>();
         }
 
         protected override void Registration()
@@ -38,7 +42,8 @@
 
         private void OnLeft()
         {
-
+            ownRigidbody.isKinematic = false;
+            ownRigidbody.useGravity = true;
         }
     }
 }

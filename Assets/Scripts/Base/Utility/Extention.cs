@@ -7,7 +7,7 @@ namespace Base.Utility
     {
         public static GameObject Random(this List<GameObject> list)
         {
-            return list[UnityEngine.Random.Range(0, list.Count - 1)];
+            return list[UnityEngine.Random.Range(0, list.Count)];
         }
 
         public static void localPositionX(this Transform transform, float x)

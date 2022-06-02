@@ -6,6 +6,12 @@
 
     public class PortableObject : BaseObject, IInteractable
     {
+        [SerializeField] private bool returnStartParent = true;
+
+        private Rigidbody ownRigidbody;
+        private bool startGravityAction = false;
+        private bool startKinematicAction = false;
+
         public event Action<BaseHand> Receipt;
         public event Action Left;
 
@@ -14,7 +20,9 @@
         protected override void Initialize()
         {
             base.Initialize();
+
             parent = transform.parent;
+            ownRigidbody = GetComponent<Rigidbody>();
         }
 
         public void OnTriggerEnterHand(BaseHand hand)
@@ -44,13 +52,21 @@
 
         protected virtual void Receive(BaseHand hand)
         {
+            startGravityAction = ownRigidbody.useGravity;
+            startKinematicAction = ownRigidbody.isKinematic;
+            ownRigidbody.useGravity = false;
+            ownRigidbody.isKinematic = true;
+
             transform.SetParent(hand.transform);
             Receipt?.Invoke(hand);
         }
 
         protected virtual void Leave(BaseHand hand)
         {
-            transform.SetParent(parent);
+            ownRigidbody.useGravity = startGravityAction;
+            ownRigidbody.isKinematic = startKinematicAction;
+
+            transform.SetParent(returnStartParent ? parent : null);
             Left?.Invoke();
 
             hand.GripButtonDown -= OnGripButtonDown;

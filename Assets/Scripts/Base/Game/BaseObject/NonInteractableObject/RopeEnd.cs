@@ -6,7 +6,7 @@
 
     public class RopeEnd : BaseObject
     {
-        [SerializeField] private float waterLevel = 1;
+        [SerializeField] private float waterLevel = 1.5f;
 
         public event Action<bool> underWater;
 
