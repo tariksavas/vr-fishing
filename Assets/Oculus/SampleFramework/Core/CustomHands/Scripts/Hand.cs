@@ -201,12 +201,12 @@ namespace OVRTouchSample
 
             // Point
             bool canPoint = !grabbing || grabPose.AllowPointing;
-            float point = canPoint ? m_pointBlend : 0.0f;
+            float point = /*canPoint ? m_pointBlend : */0.0f;
             m_animator.SetLayerWeight(m_animLayerIndexPoint, point);
 
             // Thumbs up
             bool canThumbsUp = !grabbing || grabPose.AllowThumbsUp;
-            float thumbsUp = canThumbsUp ? m_thumbsUpBlend : 0.0f;
+            float thumbsUp = /*canThumbsUp ? m_thumbsUpBlend : */0.0f;
             m_animator.SetLayerWeight(m_animLayerIndexThumb, thumbsUp);
 
             float pinch = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, m_controller);
