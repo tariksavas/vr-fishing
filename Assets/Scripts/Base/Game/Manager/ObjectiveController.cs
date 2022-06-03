@@ -1,6 +1,6 @@
-using UnityEngine;
-
-public class ObjectiveController : MonoBehaviour
+namespace Base.Game.Manager
 {
-
+    public class ObjectiveController : MyObject
+    {
+    }
 }

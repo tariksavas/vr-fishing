@@ -52,6 +52,8 @@
 
         protected virtual void Receive(BaseHand hand)
         {
+            hand.HandledObject = this;
+
             startGravityAction = ownRigidbody.useGravity;
             startKinematicAction = ownRigidbody.isKinematic;
             ownRigidbody.useGravity = false;
@@ -63,6 +65,8 @@
 
         protected virtual void Leave(BaseHand hand)
         {
+            hand.HandledObject = null;
+
             ownRigidbody.useGravity = startGravityAction;
             ownRigidbody.isKinematic = startKinematicAction;
 

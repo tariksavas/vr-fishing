@@ -30,6 +30,8 @@ namespace Base.Game.BaseObject.InteractableObject
         private ObiRopeCursor cursor;
         private ObiRope rope;
         private bool firstTime = true;
+        private bool empty = true;
+        private BaseHand interactedHand;
 
         public static event Action catchFish;
 
@@ -61,17 +63,18 @@ namespace Base.Game.BaseObject.InteractableObject
             PulleyRotator.turning -= OnTurning;
         }
 
-        private void OnReceipt(BaseHand obj)
+        private void OnReceipt(BaseHand hand)
         {
-            if (objectivePopup)
-                objectivePopup?.SetActive(false);
-
             if (firstTime)
             {
+                if (objectivePopup)
+                    objectivePopup?.SetActive(false);
+
                 sealSource.Play();
                 firstTime = false;
             }
 
+            interactedHand = hand;
             robeEnd.underWater += OnUnderWater;
         }
         private void OnLeft()
@@ -89,7 +92,7 @@ namespace Base.Game.BaseObject.InteractableObject
                 fishingCoroutine = null;
             }
 
-            else if (underWater && fishingCoroutine == null)
+            else if (underWater && fishingCoroutine == null && empty)
                 fishingCoroutine = StartCoroutine(Fishing());
         }
 
@@ -101,7 +104,9 @@ namespace Base.Game.BaseObject.InteractableObject
             {
                 if (caughtFish)
                 {
+                    empty = false;
                     ownAnimator.SetTrigger(catchAnimName);
+                    interactedHand.Device.SendHapticImpulse(0u, Constant.FISHINGHAPTICAMPLITUDE, Constant.FISHINGHAPTICDURATION);
                     caughtFish.handled += OnHandled;
                 }
             });
@@ -110,6 +115,7 @@ namespace Base.Game.BaseObject.InteractableObject
 
         private void OnHandled(Fish caughtFish)
         {
+            empty = true;
             ownAnimator.SetTrigger(releaseAnimName);
             caughtFish.handled -= OnHandled;
         }

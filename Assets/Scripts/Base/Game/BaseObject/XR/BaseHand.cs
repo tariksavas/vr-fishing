@@ -11,6 +11,8 @@ namespace Base.Game.BaseObject.XR
         [SerializeField] private InputDeviceCharacteristics handType = InputDeviceCharacteristics.Right;
 
         private InputDevice _device;
+        public InputDevice Device => _device;
+
         private static List<BaseHand> Hands { get; set; } = new List<BaseHand>();
 
 
@@ -116,8 +118,8 @@ namespace Base.Game.BaseObject.XR
         public event Action<BaseHand> PrimaryAxisDown;
         public event Action<BaseHand> PrimaryAxisUp;
         public event Action<BaseHand, Vector2> AxisChanged;
-        public event Action MenuButtonDown;
         public event Action ObjectHandled;
+        public static event Action MenuButtonDown;
 
         protected override void Initialize()
         {
